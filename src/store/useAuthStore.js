@@ -7,18 +7,14 @@ const useAuthStore = create((set) => ({
   loading: false,
   error: null,
 
-  // Login funksiyasi
   login: async (email, password) => {
     set({ loading: true, error: null });
     try {
-      // 1. Tokenlarni olish
       const { access_token, refresh_token } = await authService.login(email, password);
 
-      // 2. LocalStoragega yozish
       localStorage.setItem("access_token", access_token);
       localStorage.setItem("refresh_token", refresh_token);
 
-      // 3. User profilini yuklash (Token headerda avtomatik ketadi - axiosClient orqali)
       const user = await authService.getProfile();
 
       set({
@@ -27,7 +23,7 @@ const useAuthStore = create((set) => ({
         loading: false
       });
 
-      return true; // Login muvaffaqiyatli
+      return true;
     } catch (error) {
       set({
         error: error.response?.data?.message || "Login failed",
@@ -37,24 +33,20 @@ const useAuthStore = create((set) => ({
     }
   },
 
-  // Logout funksiyasi
   logout: () => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     set({ user: null, isAuthenticated: false });
   },
 
-  // Sahifa yangilanganda (Refresh) user borligini tekshirish
   checkAuth: async () => {
     const token = localStorage.getItem("access_token");
     if (!token) return;
 
     try {
-      // Token bor ekan, demak user ma'lumotini tortib olamiz
-      const user = await authService.getProfile();
+       const user = await authService.getProfile();
       set({ user: user, isAuthenticated: true });
     } catch (error) {
-      // Agar token eskirgan bo'lsa va refresh ishlamasa -> logout
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       set({ user: null, isAuthenticated: false });
