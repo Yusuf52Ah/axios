@@ -3,14 +3,16 @@ import CreatePost from "@/components/auth/CreatePost";
 import Modal from "@/components/ui/Modal";
 import {
   useProducts,
-  useUpdateProductPut,
+  useUpdateProduct,
   useDeleteProduct,
 } from "@/components/hooks/queries/product";
 
 export default function HomePage() {
-  const { data, isLoading } = useProducts();
+const { data, isLoading } = useProducts();
+
+const products = data?.data ?? [];
   const { mutate: deleteProduct } = useDeleteProduct();
-  const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProductPut();
+  const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProduct();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);

@@ -11,23 +11,46 @@ export const useCreateProduct = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: productService.createProduct,
-    onSuccess: () => qc.invalidateQueries(["products"]),
-  });
-};
-
-export const useUpdateProductPut = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }) => productService.updateProductPut({ id, data }),
-    onSuccess: () => qc.invalidateQueries(["products"]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
   });
 };
 
 export const useUpdateProductPatch = () => {
   const qc = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ id, data }) => productService.updateProductPatch({ id, data }),
-    onSuccess: () => qc.invalidateQueries(["products"]),
+    mutationFn: ({ id, data }) =>
+      productService.updateProductPatch({ id, data }),
+
+    onMutate: async ({ id, data }) => {
+      await qc.cancelQueries({ queryKey: ["products"] });
+
+      const previousProducts = qc.getQueryData(["products"]);
+
+      qc.setQueryData(["products"], (old) => {
+        const products = old?.data ?? old;
+        if (!Array.isArray(products)) return old;
+
+        return {
+          ...old,
+          data: products.map((p) =>
+            p.id === id ? { ...p, ...data } : p
+          ),
+        };
+      });
+
+      return { previousProducts };
+    },
+
+    onError: (err, variables, context) => {
+      if (context?.previousProducts) {
+        qc.setQueryData(["products"], context.previousProducts);
+      }
+    },
+
+    onSettled: () => {
+      qc.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 };
 
@@ -35,7 +58,8 @@ export const useDeleteProduct = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: productService.deleteProduct,
-    onSuccess: () => qc.invalidateQueries(["products"]),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
   });
 };
+
 export const useUpdateProduct = useUpdateProductPatch;
