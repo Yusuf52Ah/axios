@@ -8,9 +8,9 @@ import {
 } from "@/components/hooks/queries/product";
 
 export default function HomePage() {
-const { data, isLoading } = useProducts();
+  const { data, isLoading } = useProducts();
 
-const products = data?.data ?? [];
+  const products = data?.data ?? [];
   const { mutate: deleteProduct } = useDeleteProduct();
   const { mutate: updateProduct, isLoading: isUpdating } = useUpdateProduct();
 

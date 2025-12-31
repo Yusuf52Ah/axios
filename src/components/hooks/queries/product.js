@@ -33,7 +33,7 @@ export const useUpdateProductPatch = () => {
 
         return {
           ...old,
-          data: products.map((p) =>
+          data: data.map((p) =>
             p.id === id ? { ...p, ...data } : p
           ),
         };
